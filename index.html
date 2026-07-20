@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Penduduk</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        .btn-primary { background-color: #3498db; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-success { background-color: #2ecc71; }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-warning { background-color: #f39c12; }
+        .btn-warning:hover { background-color: #d68910; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+        }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Aplikasi Manajemen Data Penduduk Berbasis Cloud</h2>
+
+    <!-- FORM INPUT / UPDATE DATA -->
+    <div style="background: #ebeeef; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h3 id="formTitle" style="margin-top: 0;">Tambah Data Penduduk</h3>
+        <form id="pendudukForm">
+            <input type="hidden" id="id_penduduk">
+            
+            <div class="form-group">
+                <label for="nik">NIK:</label>
+                <input type="text" id="nik" placeholder="Masukkan NIK (maks. 16 digit)" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="nama">Nama Lengkap:</label>
+                <input type="text" id="nama" placeholder="Masukkan Nama Lengkap" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="jenis_kelamin">Jenis Kelamin:</label>
+                <select id="jenis_kelamin" required>
+                    <option value="true">Laki-laki (1)</option>
+                    <option value="false">Perempuan (0)</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="btnSubmit">Simpan Data</button>
+            <button type="button" class="btn btn-warning" id="btnCancel" style="display: none;" onclick="resetForm()">Batal</button>
+        </form>
+    </div>
+
+    <!-- TABEL DATA PENDUDUK[cite: 1] -->
+    <h3>Daftar Penduduk</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID[cite: 1]</th>
+                <th>NIK[cite: 1]</th>
+                <th>Nama[cite: 1]</th>
+                <th>Jenis Kelamin[cite: 1]</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="5">Memuat data dari API...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Pastikan port 7274 sesuai dengan port yang muncul di terminal Visual Studio kamu!
+    const API_URL = "http://localhost:7274/api/penduduk";
+
+    // 1. READ ALL - Menampilkan seluruh data penduduk ke dalam tabel[cite: 1]
+    async function loadData() {
+        const tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = "<tr><td colspan='5'>Memuat data...</td></tr>";
+
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error("Gagal mengambil data dari API");
+            
+            const data = await response.json();
+            tableBody.innerHTML = "";
+
+            if (data.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='5'>Belum ada data penduduk.</td></tr>";
+                return;
+            }
+
+            data.forEach(item => {
+                const jkTeks = item.jenis_kelamin ? "Laki - laki" : "Perempuan";[cite: 1]
+                const row = `
+                    <tr>
+                        <td>${item.id_penduduk}</td>[cite: 1]
+                        <td>${item.nik}</td>[cite: 1]
+                        <td>${item.nama}</td>[cite: 1]
+                        <td>${jkTeks}</td>[cite: 1]
+                        <td>
+                            <button class="btn btn-success" style="padding: 5px 10px;" onclick="editData(${item.id_penduduk}, '${item.nik}', '${item.nama}', ${item.jenis_kelamin})">Edit</button>[cite: 1]
+                            <button class="btn btn-danger" style="padding: 5px 10px;" onclick="hapusData(${item.id_penduduk})">Hapus</button>[cite: 1]
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        } catch (error) {
+            console.error("Error:", error);
+            tableBody.innerHTML = `<tr><td colspan='5' style='color: red;'>Error: ${error.message}. Pastikan Azure Function API sedang jalan dan CORS sudah diatur!</td></tr>`;
+        }
+    }
+
+    // 2. CREATE & UPDATE - Handle submit formulir[cite: 1]
+    document.getElementById("pendudukForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("id_penduduk").value;
+        const nik = document.getElementById("nik").value;
+        const nama = document.getElementById("nama").value;
+        const jenis_kelamin = document.getElementById("jenis_kelamin").value === "true";[cite: 1]
+
+        const payload = { nik, nama, jenis_kelamin };[cite: 1]
+
+        try {
+            let response;
+            if (id) {
+                // Jika ID ada, lakukan UPDATE (PUT)[cite: 1]
+                response = await fetch(`${API_URL}/${id}`, {
+                    method: "PUT",[cite: 1]
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // Jika ID kosong, lakukan CREATE (POST)[cite: 1]
+                response = await fetch(API_URL, {
+                    method: "POST",[cite: 1]
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            if (response.ok) {
+                alert(id ? "Data berhasil diperbarui!" : "Data berhasil ditambahkan!");
+                resetForm();
+                loadData();
+            } else {
+                alert("Gagal menyimpan data.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Terjadi kesalahan koneksi ke server.");
+        }
+    });
+
+    // 3. Persiapkan form untuk mode UPDATE[cite: 1]
+    function editData(id, nik, nama, jk) {
+        document.getElementById("id_penduduk").value = id;
+        document.getElementById("nik").value = nik;
+        document.getElementById("nama").value = nama;
+        document.getElementById("jenis_kelamin").value = jk ? "true" : "false";[cite: 1]
+
+        document.getElementById("formTitle").innerText = "Edit Data Penduduk (ID: " + id + ")";
+        document.getElementById("btnSubmit").innerText = "Update Data";
+        document.getElementById("btnSubmit").className = "btn btn-success";
+        document.getElementById("btnCancel").style.display = "inline-block";
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 4. DELETE - Menghapus data penduduk[cite: 1]
+    async function hapusData(id) {
+        if (!confirm(`Yakin ingin menghapus data dengan ID ${id}?`)) return;
+
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: "DELETE"[cite: 1]
+            });
+
+            if (response.ok) {
+                alert("Data berhasil dihapus!");
+                loadData();
+            } else {
+                alert("Gagal menghapus data.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Terjadi kesalahan koneksi saat menghapus data.");
+        }
+    }
+
+    // Reset Form kembali ke mode Create[cite: 1]
+    function resetForm() {
+        document.getElementById("id_penduduk").value = "";
+        document.getElementById("pendudukForm").reset();
+        document.getElementById("formTitle").innerText = "Tambah Data Penduduk";
+        document.getElementById("btnSubmit").innerText = "Simpan Data";
+        document.getElementById("btnSubmit").className = "btn btn-primary";
+        document.getElementById("btnCancel").style.display = "none";
+    }
+
+    // Muat data saat halaman pertama kali dibuka
+    loadData();
+</script>
+
+</body>
+</html>
