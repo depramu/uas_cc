@@ -129,10 +129,7 @@
 </div>
 
 <script>
-    // Pastikan port 7274 sesuai dengan port yang muncul di terminal Visual Studio kamu!
-    const API_URL = "http://localhost:7274/api/penduduk";
-
-    // 1. READ ALL - Menampilkan seluruh data penduduk ke dalam tabel[cite: 1]
+const API_URL = "https://funcuas-039.azurewebsites.net/api/penduduk";
     async function loadData() {
         const tableBody = document.getElementById("tableBody");
         tableBody.innerHTML = "<tr><td colspan='5'>Memuat data...</td></tr>";
